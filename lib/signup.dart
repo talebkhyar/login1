@@ -1,8 +1,21 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+
 import 'package:image_picker/image_picker.dart';
+import 'package:login1/login.dart';
+import 'package:login1/share/snackbar.dart';
 import 'dart:io';
+
 import 'package:permission_handler/permission_handler.dart';
+import 'package:firebase_core/firebase_core.dart';
+
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:path/path.dart' show basename;
+import 'dart:math';
 
 class Signup extends StatefulWidget {
   const Signup({super.key});
@@ -35,6 +48,11 @@ class _SignupState extends State<Signup> {
   File? _file;
   File? cart;
   File? releve;
+  File? imgPath;
+  String? imgName;
+  bool isLoading = false;
+
+   String? _selectedItem = 'Réseau informatique';
   Future<File?> rec() async {
     final mycart = await ImagePicker().pickImage(source: ImageSource.gallery);
 
@@ -48,6 +66,139 @@ class _SignupState extends State<Signup> {
     }
   }
 
+  register() async {
+    setState(() {
+      isLoading = true;
+    });
+    try {
+      final credential =
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: _controllerEmail.text,
+        password: _controllerPassword.text,
+      );
+      final storageRef = FirebaseStorage.instance.ref("$_selectedItem/${_controllerUsername.text}/$imgName");
+      await storageRef.putFile(imgPath!);
+      String urll = await storageRef.getDownloadURL();
+
+      print(credential.user!.uid);
+
+      CollectionReference users =
+          FirebaseFirestore.instance.collection(_selectedItem.toString());
+
+      // Call the user's CollectionReference to add a new user
+      users
+          .doc(_controllerUsername.text)
+          .set({
+            'full_name': _controllerUsername.text, // John Doe
+            'bac': _controllerbac.text, // Stokes and Sons
+            'tel': _controllertelephone.text,
+            'NNI': _controllernni.text,
+            'Email': _controllerEmail.text,
+            'urlimage':urll,
+            'filiére':_selectedItem.toString()
+          })
+          .then((value) => print("User Added"))
+          .catchError((error) => print("Failed to add user: $error"));
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'weak-password') {
+        showSnackBar(context, "The password provided is too weak.");
+      } else if (e.code == 'email-already-in-use') {
+        showSnackBar(context, "The account already exists for that email.");
+      } else {
+        showSnackBar(context, "Erreur ");
+      }
+    } catch (e) {
+      print(e);
+    }
+    
+    setState(() {
+      isLoading = false;
+    });
+  }
+
+  uploadImage2Screen(ImageSource source) async {
+    final pickedImg = await ImagePicker().pickImage(source: source);
+    try {
+      if (pickedImg != null) {
+        setState(() {
+          imgPath = File(pickedImg.path);
+          imgName = basename(pickedImg.path);
+          int random = Random().nextInt(9999999);
+          imgName = "$random$imgName";
+          print(imgName);
+        });
+      } else {
+        print("NO img selected");
+      }
+    } catch (e) {
+      print("Error => $e");
+    }
+
+    if (!mounted) return;
+    Navigator.pop(context);
+
+  }
+
+  showmodel() {
+    return showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return Container(
+          padding: EdgeInsets.all(22),
+          height: 170,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              GestureDetector(
+                onTap: () async {
+                  await uploadImage2Screen(ImageSource.camera);
+                },
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.camera,
+                      size: 30,
+                    ),
+                    SizedBox(
+                      width: 11,
+                    ),
+                    Text(
+                      "From Camera",
+                      style: TextStyle(fontSize: 20),
+                    )
+                  ],
+                ),
+              ),
+              SizedBox(
+                height: 22,
+              ),
+              GestureDetector(
+                onTap: () {
+                  uploadImage2Screen(ImageSource.gallery);
+                },
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.photo_outlined,
+                      size: 30,
+                    ),
+                    SizedBox(
+                      width: 11,
+                    ),
+                    Text(
+                      "From Gallery",
+                      style: TextStyle(fontSize: 20),
+                    )
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -58,7 +209,7 @@ class _SignupState extends State<Signup> {
           padding: const EdgeInsets.symmetric(horizontal: 30.0),
           child: Column(
             children: [
-              const SizedBox(height: 100),
+              const SizedBox(height: 50),
               Text(
                 "ISCAE",
                 style: Theme.of(context).textTheme.headlineMedium!.copyWith(
@@ -72,6 +223,33 @@ class _SignupState extends State<Signup> {
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               const SizedBox(height: 35),
+              imgPath == null
+                  ? CircleAvatar(
+                      backgroundColor: Color.fromARGB(255, 225, 225, 225),
+                      radius: 71,
+                      // backgroundImage: AssetImage("assets/img/avatar.png"),
+                      backgroundImage: AssetImage("assets/img/avatar.png"),
+                    )
+                  : ClipOval(
+                      child: Image.file(
+                        imgPath!,
+                        width: 145,
+                        height: 145,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+              Positioned(
+                left: 99,
+                bottom: -10,
+                child: IconButton(
+                  onPressed: () {
+                    // uploadImage2Screen();
+                    showmodel();
+                  },
+                  icon: const Icon(Icons.add_a_photo),
+                  color: Color.fromARGB(255, 94, 115, 128),
+                ),
+              ),
               TextFormField(
                 controller: _controllernni,
                 keyboardType: TextInputType.number,
@@ -132,10 +310,10 @@ class _SignupState extends State<Signup> {
                 children: [
                   ElevatedButton(
                     onPressed: () async {
-                      var status = await Permission.camera.status;
-                      if (status.isDenied) {
-                        cart = await rec();
-                      }
+                      // PermissionStatus status =
+                      //     await Permission.photos.request();
+                      // if (status.isGranted) {
+                      cart = await rec();
                     },
                     style: ElevatedButton.styleFrom(
                       shape: RoundedRectangleBorder(
@@ -205,6 +383,34 @@ class _SignupState extends State<Signup> {
                 ],
               ),
               const SizedBox(height: 10),
+              Container(   decoration: BoxDecoration(
+    borderRadius: BorderRadius.circular(10.0),
+    color: Colors.grey[200]!.withOpacity(0.0), // Rendre le conteneur transparent
+    border: Border.all(color: Colors.grey), // Ajouter une bordure si nécessaire
+  ),
+  // padding: EdgeInsets.symmetric(horizontal: 100,),
+  
+                child: DropdownButton<String>(
+                          value: _selectedItem,
+                          onChanged: (String? newValue) {
+                            setState(() {
+                _selectedItem = newValue;
+                
+                            });
+                          },
+                          items: <String>['Réseau informatique', 'statistique', 'informatique de gestion', 'developpement informatique']
+                .map<DropdownMenuItem<String>>((String value) {
+                            return DropdownMenuItem<String>(
+                value: value,
+                child: Text(value),
+                
+                            );
+                          }).toList(),
+                          
+                        ),
+              ),
+      
+      const SizedBox(height: 10),
               TextFormField(
                 controller: _controllertelephone,
                 keyboardType: TextInputType.number,
@@ -367,33 +573,25 @@ class _SignupState extends State<Signup> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                     ),
-                    onPressed: () {
-                      if (_formKey.currentState?.validate() ?? false) {
-                        _boxAccounts.put(
-                          _controllerUsername.text,
-                          _controllerConFirmPassword.text,
-                          //  _controllerbac.text,
+                    onPressed: () 
+                      async {
+                      if (_formKey.currentState!.validate() &&
+                          imgName != null &&
+                          imgPath != null) {
+                        await register();
+                        if (!mounted) return;
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => const Login()),
                         );
-
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            width: 200,
-                            backgroundColor:
-                                Theme.of(context).colorScheme.secondary,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            behavior: SnackBarBehavior.floating,
-                            content: const Text("Registered Successfully"),
-                          ),
-                        );
-
-                        _formKey.currentState?.reset();
-
-                        Navigator.pop(context);
+                      } else {
+                        showSnackBar(context, "ERROR");
                       }
                     },
-                    child: const Text("Enregistré"),
+                    child: isLoading
+                        ? CircularProgressIndicator(
+                            color: Colors.white,
+                          ):  const Text("Enregistré"),
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,

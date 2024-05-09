@@ -58,10 +58,10 @@ class _HomeState extends State<Home> {
             flexibleSpace: FlexibleSpaceBar(
               title: const Text('ISACEINSQ2'),
               centerTitle: false,
-              background: Image.asset(
-                'images/FB.jpg',
-                fit: BoxFit.cover,
-              ),
+              // background: Image.asset(
+              //   'images/FB.jpg',
+              //   fit: BoxFit.cover,
+              // ),
             ),
           ),
           SliverToBoxAdapter(

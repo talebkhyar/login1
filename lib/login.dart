@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-
+import 'package:login1/pages/home.dart';
 import 'signup.dart';
-import 'pages/home.dart';
+
 
 class Login extends StatefulWidget {
   const Login({
@@ -26,9 +26,9 @@ class _LoginState extends State<Login> {
 
   @override
   Widget build(BuildContext context) {
-    if (_boxLogin.get("loginStatus") ?? false) {
-      return Home();
-    }
+    // if (_boxLogin.get("loginStatus") ?? false) {
+    //   return const Home();
+    // }
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.primaryContainer,
@@ -47,7 +47,6 @@ class _LoginState extends State<Login> {
                 "Dans",
                 style: Theme.of(context).textTheme.headlineLarge,
               ),
-              
               Text(
                 "ISCAE",
                 style: Theme.of(context).textTheme.headlineMedium!.copyWith(
@@ -55,7 +54,6 @@ class _LoginState extends State<Login> {
                     fontWeight: FontWeight.bold, // Gras
                     color: Colors.blue),
               ),
-              
               const SizedBox(height: 10),
               Text(
                 "Login to your account",
@@ -134,14 +132,14 @@ class _LoginState extends State<Login> {
                     ),
                     onPressed: () {
                       if (_formKey.currentState?.validate() ?? true) {
-                        _boxLogin.put("loginStatus", true);
-                        _boxLogin.put("userName", _controllerUsername.text);
-
-                        Navigator.pushReplacement(
+                        // _boxLogin.put("loginStatus", true);
+                        // _boxLogin.put("userName", _controllerUsername.text);
+                        // Navigator.pushNamed(context, '/home');
+                        Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) {
-                              return Home();
+                              return const Home();
                             },
                           ),
                         );
