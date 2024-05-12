@@ -43,26 +43,47 @@ class _SignupState extends State<Signup> {
   final TextEditingController _controllerbac = TextEditingController();
   final TextEditingController _controllertelephone = TextEditingController();
 
-  final Box _boxAccounts = Hive.box("accounts");
+  
   bool _obscurePassword = true;
   File? _file;
   File? cart;
   File? releve;
   File? imgPath;
   String? imgName;
+String? cartName;
+String? releveName;
   bool isLoading = false;
 
-   String? _selectedItem = 'Réseau informatique';
-  Future<File?> rec() async {
+  String? _selectedItem = 'Réseau informatique';
+  rec() async {
     final mycart = await ImagePicker().pickImage(source: ImageSource.gallery);
 
     if (mycart != null) {
       setState(() {
-        _file = File(mycart.path);
+        cart = File(mycart.path);
       });
-      return _file;
+      cartName = basename(mycart.path);
+          int random = Random().nextInt(9999999);
+          cartName = "$random$imgName";
+      showSnackBar(context, "documment selectinné");
     } else {
-      return null;
+      showSnackBar(context, "no documment selectinné");
+    }
+  }
+
+  rec1() async {
+    final mycart = await ImagePicker().pickImage(source: ImageSource.gallery);
+
+    if (mycart != null) {
+      setState(() {
+        releve = File(mycart.path);
+      });
+      releveName = basename(mycart.path);
+          int random = Random().nextInt(9999999);
+          releveName = "$random$releveName";
+      showSnackBar(context, "documment selectinné");
+    } else {
+      showSnackBar(context, "no documment selectinné");
     }
   }
 
@@ -76,8 +97,24 @@ class _SignupState extends State<Signup> {
         email: _controllerEmail.text,
         password: _controllerPassword.text,
       );
-      final storageRef = FirebaseStorage.instance.ref("$_selectedItem/${_controllerUsername.text}/$imgName");
+      final storageRef = FirebaseStorage.instance
+          .ref("$_selectedItem/${_controllerUsername.text}/$imgName");
+      // $imgName
       await storageRef.putFile(imgPath!);
+
+      
+      
+
+      final cartepath = FirebaseStorage.instance
+          .ref("$_selectedItem/${_controllerUsername.text}/$cartName");
+    
+      await  cartepath.putFile(cart!);
+
+        final relevepath = FirebaseStorage.instance
+          .ref("$_selectedItem/${_controllerUsername.text}/$releveName");
+    
+      await  relevepath.putFile(releve!);
+
       String urll = await storageRef.getDownloadURL();
 
       print(credential.user!.uid);
@@ -94,8 +131,8 @@ class _SignupState extends State<Signup> {
             'tel': _controllertelephone.text,
             'NNI': _controllernni.text,
             'Email': _controllerEmail.text,
-            'urlimage':urll,
-            'filiére':_selectedItem.toString()
+            'urlimage': urll,
+            'filiére': _selectedItem.toString()
           })
           .then((value) => print("User Added"))
           .catchError((error) => print("Failed to add user: $error"));
@@ -110,7 +147,7 @@ class _SignupState extends State<Signup> {
     } catch (e) {
       print(e);
     }
-    
+
     setState(() {
       isLoading = false;
     });
@@ -134,9 +171,7 @@ class _SignupState extends State<Signup> {
       print("Error => $e");
     }
 
-    if (!mounted) return;
-    Navigator.pop(context);
-
+    if (mounted) Navigator.pop(context);
   }
 
   showmodel() {
@@ -151,7 +186,9 @@ class _SignupState extends State<Signup> {
             children: [
               GestureDetector(
                 onTap: () async {
-                  await uploadImage2Screen(ImageSource.camera);
+                  setState(() {
+                    uploadImage2Screen(ImageSource.camera);
+                  });
                 },
                 child: Row(
                   children: [
@@ -173,7 +210,7 @@ class _SignupState extends State<Signup> {
                 height: 22,
               ),
               GestureDetector(
-                onTap: () {
+                onTap: () async {
                   uploadImage2Screen(ImageSource.gallery);
                 },
                 child: Row(
@@ -270,9 +307,7 @@ class _SignupState extends State<Signup> {
                     return "Please enter NNI";
                   } else if (value.length < 14) {
                     return "NNI doit etre de 14 chiffre.";
-                  } else if (_boxAccounts.containsKey(value)) {
-                    return "NNIi already registered.";
-                  }
+                  } 
 
                   return null;
                 },
@@ -296,8 +331,6 @@ class _SignupState extends State<Signup> {
                 validator: (String? value) {
                   if (value == null || value.isEmpty) {
                     return "Please enter numero bac.";
-                  } else if (_boxAccounts.containsKey(value)) {
-                    return "numero bac is already registered.";
                   }
 
                   return null;
@@ -313,7 +346,12 @@ class _SignupState extends State<Signup> {
                       // PermissionStatus status =
                       //     await Permission.photos.request();
                       // if (status.isGranted) {
-                      cart = await rec();
+                      rec();
+                      if (_file != null) {
+                        setState(() {
+                          rec();
+                        });
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       shape: RoundedRectangleBorder(
@@ -350,7 +388,7 @@ class _SignupState extends State<Signup> {
                 children: [
                   ElevatedButton(
                     onPressed: () async {
-                      releve = await rec();
+                      rec1();
                     },
                     style: ElevatedButton.styleFrom(
                       shape: RoundedRectangleBorder(
@@ -383,34 +421,37 @@ class _SignupState extends State<Signup> {
                 ],
               ),
               const SizedBox(height: 10),
-              Container(   decoration: BoxDecoration(
-    borderRadius: BorderRadius.circular(10.0),
-    color: Colors.grey[200]!.withOpacity(0.0), // Rendre le conteneur transparent
-    border: Border.all(color: Colors.grey), // Ajouter une bordure si nécessaire
-  ),
-  // padding: EdgeInsets.symmetric(horizontal: 100,),
-  
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10.0),
+                  color: Colors.grey[200]!
+                      .withOpacity(0.0), // Rendre le conteneur transparent
+                  border: Border.all(
+                      color: Colors.grey), // Ajouter une bordure si nécessaire
+                ),
+                // padding: EdgeInsets.symmetric(horizontal: 100,),
+
                 child: DropdownButton<String>(
-                          value: _selectedItem,
-                          onChanged: (String? newValue) {
-                            setState(() {
-                _selectedItem = newValue;
-                
-                            });
-                          },
-                          items: <String>['Réseau informatique', 'statistique', 'informatique de gestion', 'developpement informatique']
-                .map<DropdownMenuItem<String>>((String value) {
-                            return DropdownMenuItem<String>(
-                value: value,
-                child: Text(value),
-                
-                            );
-                          }).toList(),
-                          
-                        ),
+                  value: _selectedItem,
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      _selectedItem = newValue;
+                    });
+                  },
+                  items: <String>[
+                    'Réseau informatique',
+                    'statistique',
+                    'informatique de gestion',
+                    'developpement informatique'
+                  ].map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                ),
               ),
-      
-      const SizedBox(height: 10),
+              const SizedBox(height: 10),
               TextFormField(
                 controller: _controllertelephone,
                 keyboardType: TextInputType.number,
@@ -432,8 +473,6 @@ class _SignupState extends State<Signup> {
                   } else if (!RegExp(r'^[2-4]').hasMatch(value)) {
                     // Le texte ne commence pas par 2, 3 ou 4
                     return "Le texte doit commencer par 2, 3 ou 4.";
-                  } else if (_boxAccounts.containsKey(value)) {
-                    return "phone is already registered.";
                   }
 
                   return null;
@@ -458,9 +497,7 @@ class _SignupState extends State<Signup> {
                 validator: (String? value) {
                   if (value == null || value.isEmpty) {
                     return "Please enter username.";
-                  } else if (_boxAccounts.containsKey(value)) {
-                    return "Username is already registered.";
-                  }
+                  } 
 
                   return null;
                 },
@@ -573,8 +610,7 @@ class _SignupState extends State<Signup> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                     ),
-                    onPressed: () 
-                      async {
+                    onPressed: () async {
                       if (_formKey.currentState!.validate() &&
                           imgName != null &&
                           imgPath != null) {
@@ -582,7 +618,8 @@ class _SignupState extends State<Signup> {
                         if (!mounted) return;
                         Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(builder: (context) => const Login()),
+                          MaterialPageRoute(
+                              builder: (context) => const Login()),
                         );
                       } else {
                         showSnackBar(context, "ERROR");
@@ -591,7 +628,8 @@ class _SignupState extends State<Signup> {
                     child: isLoading
                         ? CircularProgressIndicator(
                             color: Colors.white,
-                          ):  const Text("Enregistré"),
+                          )
+                        : const Text("Enregistré"),
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,

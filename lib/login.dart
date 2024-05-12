@@ -1,8 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:login1/pages/home.dart';
-import 'signup.dart';
 
+import 'package:login1/share/snackbar.dart';
+import 'signup.dart';
 
 class Login extends StatefulWidget {
   const Login({
@@ -21,8 +22,47 @@ class _LoginState extends State<Login> {
   final TextEditingController _controllerPassword = TextEditingController();
 
   bool _obscurePassword = true;
-  final Box _boxLogin = Hive.box("login");
-  final Box _boxAccounts = Hive.box("accounts");
+
+  bool isLoading = false;
+  bool code = false;
+  bool email = false;
+
+  signIn() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: _controllerUsername.text, password: _controllerPassword.text);
+
+      
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'invalid-credential') {
+        // Adresse e-mail incorrecte
+        showSnackBar(context, "Adresse e-mail incorrecte");
+        setState(() {
+          code = true;
+        });
+        if (_formKey.currentState?.validate() ?? true) {}
+      } else if (e.code == 'wrong-password') {
+        showSnackBar(context, "Le mot de passe est incorrect.");
+        if (_formKey.currentState?.validate() ?? true) {}
+        setState(() {
+          code = true;
+        });
+      } else {
+        showSnackBar(context, "ERROR :  ${e.code} ");
+        print(e.code);
+        setState(() {
+          code = true;
+        });
+      }
+    }
+    setState(() {
+      isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -75,11 +115,12 @@ class _LoginState extends State<Login> {
                 ),
                 onEditingComplete: () => _focusNodePassword.requestFocus(),
                 validator: (String? value) {
-                  if (value == null || value.isEmpty) {
-                    return "Please enter username.";
-                  } else if (!_boxAccounts.containsKey(value)) {
-                    return "Username is not registered.";
+                  if (value == null || value.isEmpty || email == true) {
+                    return "Email incorect.";
                   }
+                  // else if (!_boxAccounts.containsKey(value)) {
+                  //   return "Username is not registered.";
+                  // }
 
                   return null;
                 },
@@ -110,12 +151,13 @@ class _LoginState extends State<Login> {
                   ),
                 ),
                 validator: (String? value) {
-                  if (value == null || value.isEmpty) {
-                    return "Please enter password.";
-                  } else if (value !=
-                      _boxAccounts.get(_controllerUsername.text)) {
-                    return "Wrong password.";
+                  if (value == null || value.isEmpty || code == true) {
+                    return "password ou Email incorect.";
                   }
+                  // else if (value !=
+                  //     _boxAccounts.get(_controllerUsername.text)) {
+                  //   return "Wrong password.";
+                  // }
 
                   return null;
                 },
@@ -131,21 +173,30 @@ class _LoginState extends State<Login> {
                       ),
                     ),
                     onPressed: () {
-                      if (_formKey.currentState?.validate() ?? true) {
-                        // _boxLogin.put("loginStatus", true);
-                        // _boxLogin.put("userName", _controllerUsername.text);
-                        // Navigator.pushNamed(context, '/home');
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) {
-                              return const Home();
-                            },
-                          ),
-                        );
+                      signIn();
+                      if (mounted) {
+                        if (_formKey.currentState?.validate() ?? true) {}
                       }
+
+                      // if (_formKey.currentState?.validate() ?? true) {
+                      //   // _boxLogin.put("loginStatus", true);
+                      //   // _boxLogin.put("userName", _controllerUsername.text);
+                      //   // Navigator.pushNamed(context, '/home');
+                      //   Navigator.push(
+                      //     context,
+                      //     MaterialPageRoute(
+                      //       builder: (context) {
+                      //         return const Home();
+                      //       },
+                      //     ),
+                      //   );
+                      // }
                     },
-                    child: const Text("Login"),
+                    child: isLoading
+                        ? CircularProgressIndicator(
+                            color: Colors.white,
+                          )
+                        : const Text("Login"),
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
