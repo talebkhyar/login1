@@ -35,8 +35,15 @@ class _LoginState extends State<Login> {
     try {
       final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
           email: _controllerUsername.text, password: _controllerPassword.text);
-
-      
+   Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) {
+                                return const Home();
+                              },
+                            ),
+                          );
+   
     } on FirebaseAuthException catch (e) {
       if (e.code == 'invalid-credential') {
         // Adresse e-mail incorrecte

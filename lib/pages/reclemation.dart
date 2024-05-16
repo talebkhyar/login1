@@ -11,12 +11,15 @@ class _RectlmationState extends State<Rectlmation> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+            backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+
       appBar: AppBar(
-        backgroundColor: Colors.purpleAccent,
+        backgroundColor:  Colors.blueAccent,
         title: Text('Reclmation'),
         centerTitle: true,
       ),
       body: Container(
+        
         height: double.infinity,
         width: double.infinity,
         child: ListView(

@@ -5,8 +5,11 @@ import 'package:login1/pages/result.dart';
 import 'package:login1/pages/setting.dart';
 import 'package:login1/pages/welcome_view.dart';
 
+
+
+ 
 class Home extends StatefulWidget {
-  const Home({super.key});
+  const Home({Key? key}) : super(key: key);
 
   @override
   State<Home> createState() => _HomeState();
@@ -14,28 +17,28 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   int intNav = 1;
-
-  List<Widget> listwidget = [Result(), WelcomeView(), Setting()];
+   List<Widget> listwidget = [Result(), WelcomeView(), Setting()];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 193, 169, 238),
+      backgroundColor: Theme.of(context).colorScheme.primaryContainer,
       bottomNavigationBar: CurvedNavigationBar(
-          onTap: (val) {
-            setState(() {
-              intNav = val;
-            });
-          },
-          index: intNav,
-          backgroundColor: const Color.fromARGB(255, 193, 169, 238),
-          buttonBackgroundColor: Colors.blueAccent,
-          animationDuration: const Duration(milliseconds: 500),
-          items: const [
-            Icon(Icons.note),
-            Icon(Icons.home),
-            Icon(Icons.settings),
-          ]),
+        onTap: (val) {
+          setState(() {
+            intNav = val;
+          });
+        },
+        index: intNav,
+        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+        buttonBackgroundColor: Colors.blueAccent,
+        animationDuration: const Duration(milliseconds: 500),
+        items: const [
+          Icon(Icons.note),
+          Icon(Icons.home),
+          Icon(Icons.settings),
+        ]
+      ),
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
@@ -49,30 +52,30 @@ class _HomeState extends State<Home> {
                 size: 40,
               ),
               onPressed: () {
-                Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) => const Notifi()));
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => const Notifi(),
+                ));
               },
             ),
             centerTitle: true,
             expandedHeight: 100,
-            flexibleSpace: FlexibleSpaceBar(
-              title: const Text('ISACEINSQ2'),
+            flexibleSpace: const FlexibleSpaceBar(
+              title: Text('ISACEINSQ2'),
               centerTitle: false,
-              // background: Image.asset(
-              //   'images/FB.jpg',
-              //   fit: BoxFit.cover,
-              // ),
             ),
           ),
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(18.0),
-              child: Container(
-                height: double.maxFinite,
-                child: listwidget.elementAt(intNav),
-              ),
+              child:Container(
+  height: (intNav == 0 || intNav == 2) ? 500 : null,
+  child: listwidget[intNav],
+),
+
+
             ),
-          ),
+            ),
+          
         ],
       ),
     );

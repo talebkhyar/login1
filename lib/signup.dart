@@ -124,10 +124,10 @@ String? releveName;
 
       // Call the user's CollectionReference to add a new user
       users
-          .doc(_controllerUsername.text)
+          .doc(credential.user!.uid)
           .set({
-            'full_name': _controllerUsername.text, // John Doe
-            'bac': _controllerbac.text, // Stokes and Sons
+            'full_name': _controllerUsername.text, 
+            'bac': _controllerbac.text, 
             'tel': _controllertelephone.text,
             'NNI': _controllernni.text,
             'Email': _controllerEmail.text,
