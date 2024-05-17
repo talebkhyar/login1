@@ -43,15 +43,14 @@ class _SignupState extends State<Signup> {
   final TextEditingController _controllerbac = TextEditingController();
   final TextEditingController _controllertelephone = TextEditingController();
 
-  
   bool _obscurePassword = true;
   File? _file;
   File? cart;
   File? releve;
   File? imgPath;
   String? imgName;
-String? cartName;
-String? releveName;
+  String? cartName;
+  String? releveName;
   bool isLoading = false;
 
   String? _selectedItem = 'Réseau informatique';
@@ -63,8 +62,8 @@ String? releveName;
         cart = File(mycart.path);
       });
       cartName = basename(mycart.path);
-          int random = Random().nextInt(9999999);
-          cartName = "$random$imgName";
+      int random = Random().nextInt(9999999);
+      cartName = "$random$imgName";
       showSnackBar(context, "documment selectinné");
     } else {
       showSnackBar(context, "no documment selectinné");
@@ -79,8 +78,8 @@ String? releveName;
         releve = File(mycart.path);
       });
       releveName = basename(mycart.path);
-          int random = Random().nextInt(9999999);
-          releveName = "$random$releveName";
+      int random = Random().nextInt(9999999);
+      releveName = "$random$releveName";
       showSnackBar(context, "documment selectinné");
     } else {
       showSnackBar(context, "no documment selectinné");
@@ -102,32 +101,31 @@ String? releveName;
       // $imgName
       await storageRef.putFile(imgPath!);
 
-      
-      
-
       final cartepath = FirebaseStorage.instance
           .ref("$_selectedItem/${_controllerUsername.text}/$cartName");
-    
-      await  cartepath.putFile(cart!);
 
-        final relevepath = FirebaseStorage.instance
+      await cartepath.putFile(cart!);
+
+      final relevepath = FirebaseStorage.instance
           .ref("$_selectedItem/${_controllerUsername.text}/$releveName");
-    
-      await  relevepath.putFile(releve!);
+
+      await relevepath.putFile(releve!);
 
       String urll = await storageRef.getDownloadURL();
 
       print(credential.user!.uid);
 
       CollectionReference users =
-          FirebaseFirestore.instance.collection(_selectedItem.toString());
+          FirebaseFirestore.instance.collection("etudiants");
 
-      // Call the user's CollectionReference to add a new user
-      users
+      DocumentReference filliers = await users.doc(_selectedItem.toString());
+      filliers.set({'nom': _selectedItem.toString()});
+      CollectionReference etudiants = filliers.collection(credential.user!.uid);
+      etudiants
           .doc(credential.user!.uid)
           .set({
-            'full_name': _controllerUsername.text, 
-            'bac': _controllerbac.text, 
+            'full_name': _controllerUsername.text,
+            'bac': _controllerbac.text,
             'tel': _controllertelephone.text,
             'NNI': _controllernni.text,
             'Email': _controllerEmail.text,
@@ -307,7 +305,7 @@ String? releveName;
                     return "Please enter NNI";
                   } else if (value.length < 14) {
                     return "NNI doit etre de 14 chiffre.";
-                  } 
+                  }
 
                   return null;
                 },
@@ -497,7 +495,7 @@ String? releveName;
                 validator: (String? value) {
                   if (value == null || value.isEmpty) {
                     return "Please enter username.";
-                  } 
+                  }
 
                   return null;
                 },

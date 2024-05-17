@@ -109,19 +109,19 @@ class _OnboardingPageState extends State<OnboardingPage> {
             children: [
               buildPage(
                   color:Theme.of(context).colorScheme.secondaryContainer,
-                  urlImage: "assets/img/avatar.png",
+                  urlImage: "assets/img/iscae.jpg",
                   title: 'Présentation',
                   subtitle:
                   'Crée en 2009, par décret N° 2009-161 du 29 avril 2009,l’ISCAE est un établissement public d’enseignement supérieur et de recherche, placé sous la tutelle du Ministère en charge de l’Enseignement Supérieur.'),
               buildPage(
                   color: Theme.of(context).colorScheme.primaryContainer,
-                  urlImage: "assets/img/avatar.png",
+                  urlImage: "assets/img/iscae.jpg",
                   title: 'Missions',
                   subtitle:
                   'Il a pour mission de développer et d’offrir des formations initiales et continues, dans les domaines de la finance et comptabilité, des techniques modernes de gestion et de l’informatique,…'),
               buildPage(
                   color:Theme.of(context).colorScheme.primaryContainer,
-                  urlImage: "assets/img/avatar.png",
+                  urlImage: "assets/img/iscae.jpg",
                   title: 'Condition',
                   subtitle:
                   'this app is created to reduce the pression on administration of iscae and let students to registre online.'),
@@ -153,10 +153,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           TextButton(
-              onPressed: () => controller.previousPage(
-                duration: const Duration(microseconds: 500),
-                curve: Curves.easeInOut,
-              ),
+              onPressed: () => controller.jumpTo(2),
               child: const Text("Skip",
                   style: TextStyle(
                       color: Color.fromARGB(255, 14, 119, 7)))),
