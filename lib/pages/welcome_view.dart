@@ -88,17 +88,18 @@ class _WelcomeViewState extends State<WelcomeView> {
                   builder: (context) => PDFViewerPage(url: pdfUrl,nom: pdfnom,),
                 ),
               );
-              // final credential = FirebaseAuth.instance.currentUser;
-              // print(credential!.uid);
+              
             },
             child: GridTile(
               footer: GridTileBar(
-                backgroundColor: Colors.lightBlue.withOpacity(0.5),
+                backgroundColor: Colors.lightBlue.withOpacity(0.1),
                 title: Text(
                   pdfDocuments[index]!.name,
                   textAlign: TextAlign.center,
+                  
                   style: const TextStyle(
                     color: Colors.black,
+                    
                     fontSize: 16.0,
                     fontWeight: FontWeight.bold,
                   ),

@@ -28,22 +28,25 @@ class _ProfileState extends State<Profile> {
       }
 
       // Récupérer la référence de la collection principale
-      CollectionReference etudiantsCollection = FirebaseFirestore.instance.collection('etudiants');
+      CollectionReference etudiantsCollection =
+          FirebaseFirestore.instance.collection('etudiants');
 
       // Récupérer tous les documents de la collection principale
       QuerySnapshot querySnapshot = await etudiantsCollection.get();
 
       // Parcourir tous les documents
-    // Parcourir tous les documents
- for (var doc in querySnapshot.docs) {
+      // Parcourir tous les documents
+      for (var doc in querySnapshot.docs) {
         // Récupérer la sous-collection avec l'UID de l'étudiant
-        CollectionReference studentSubCollection = etudiantsCollection.doc(doc.id).collection(credential.uid);
+        CollectionReference studentSubCollection =
+            etudiantsCollection.doc(doc.id).collection(credential.uid);
 
         // Vérifier si la sous-collection contient des documents
         QuerySnapshot subCollectionSnapshot = await studentSubCollection.get();
         if (subCollectionSnapshot.docs.isNotEmpty) {
           // Si la sous-collection contient des documents, récupérer les données
-          DocumentSnapshot studentDoc = await studentSubCollection.doc(credential.uid).get();
+          DocumentSnapshot studentDoc =
+              await studentSubCollection.doc(credential.uid).get();
           if (studentDoc.exists) {
             setState(() {
               studentsData.add(studentDoc.data() as Map<String, dynamic>);
@@ -51,12 +54,12 @@ class _ProfileState extends State<Profile> {
               _nniController.text = studentDoc['NNI'] ?? '';
               _phoneNumberController.text = studentDoc['tel'] ?? '';
               _emailController.text = studentDoc['Email'] ?? '';
+            
             });
             print("Data fetched successfully");
           }
         }
       }
-
     } catch (e) {
       print('Erreur lors de la récupération des données: $e');
     }
@@ -90,10 +93,20 @@ class _ProfileState extends State<Profile> {
           : ListView(
               children: [
                 const SizedBox(height: 25),
-                const CircleAvatar(
+                 CircleAvatar(
                   backgroundColor: Colors.white,
                   maxRadius: 60,
+                
+                  child:  ClipOval(
+                  child:  Image.network(
+                    studentsData[0]['urlimage'],
+                    width: 145,
+                    height: 145,
+                    fit: BoxFit.cover,
+                  ),
+                ) ,
                 ),
+              
                 Padding(
                   padding: const EdgeInsets.all(28.0),
                   child: Container(
