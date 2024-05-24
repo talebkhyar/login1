@@ -1,15 +1,16 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+
 
 import 'package:image_picker/image_picker.dart';
 import 'package:login1/login.dart';
 import 'package:login1/share/snackbar.dart';
+
 import 'dart:io';
 
-import 'package:permission_handler/permission_handler.dart';
-import 'package:firebase_core/firebase_core.dart';
+
+
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -90,12 +91,36 @@ class _SignupState extends State<Signup> {
     setState(() {
       isLoading = true;
     });
+
     try {
       final credential =
           await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: _controllerEmail.text,
         password: _controllerPassword.text,
       );
+      await credential.user?.sendEmailVerification();
+      showDialog(
+      context: context,
+      barrierDismissible: false, // Empêcher de fermer le dialogue en cliquant à l'extérieur
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Vérification de l'e-mail"),
+          content: Text("Un e-mail de vérification a été envoyé à ${_controllerEmail.text}. Veuillez vérifier votre e-mail pour continuer."),
+        );
+      },
+    );
+
+    // Vérifier périodiquement si l'e-mail est vérifié
+    bool isVerified = false;
+    while (!isVerified) {
+      await Future.delayed(Duration(seconds: 3)); // Attendre 3 secondes avant chaque vérification
+      await FirebaseAuth.instance.currentUser?.reload(); // Recharger l'utilisateur pour obtenir les dernières informations
+      isVerified = FirebaseAuth.instance.currentUser?.emailVerified ?? false;
+    }
+
+    // Fermer le dialogue une fois que l'e-mail est vérifié
+    Navigator.pop(context);
+
       final storageRef = FirebaseStorage.instance
           .ref("$_selectedItem/${_controllerUsername.text}/$imgName");
       // $imgName
