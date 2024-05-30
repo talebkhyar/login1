@@ -1,16 +1,14 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:flutter/material.dart';
+import 'dart:async';
 
+import 'package:flutter/material.dart';
 
 import 'package:image_picker/image_picker.dart';
 import 'package:login1/login.dart';
 import 'package:login1/share/snackbar.dart';
 
 import 'dart:io';
-
-
-
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -87,39 +85,82 @@ class _SignupState extends State<Signup> {
     }
   }
 
-  register() async {
-    setState(() {
-      isLoading = true;
-    });
+  bool isVerified = false;
+  bool isTimeout = false;
+  Timer? timer;
+  
+void showVerificationDialog() async {
+  timer = Timer(const Duration(minutes: 4), () { // Timer de 5 minutes (300 secondes)
+    if (!isVerified) {
+      isTimeout = true;
+      Navigator.of(context).pop(); // Fermer le dialogue
+    }
+  });
+}
 
-    try {
-      final credential =
-          await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: _controllerEmail.text,
-        password: _controllerPassword.text,
-      );
-      await credential.user?.sendEmailVerification();
-      showDialog(
+register() async {
+  setState(() {
+    isLoading = true;
+  });
+
+  try {
+    final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      email: _controllerEmail.text,
+      password: _controllerPassword.text,
+    );
+    await credential.user?.sendEmailVerification();
+    showVerificationDialog();
+    showDialog(
       context: context,
       barrierDismissible: false, // Empêcher de fermer le dialogue en cliquant à l'extérieur
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text("Vérification de l'e-mail"),
-          content: Text("Un e-mail de vérification a été envoyé à ${_controllerEmail.text}. Veuillez vérifier votre e-mail pour continuer."),
+          content: SizedBox(
+            width: MediaQuery.of(context).size.width * 0.7, // 70% de la largeur de l'écran
+            height: MediaQuery.of(context).size.height * 0.3, // 30% de la hauteur de l'écran
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center, // Centrer verticalement le contenu
+              crossAxisAlignment: CrossAxisAlignment.center, // Centrer horizontalement le contenu
+              children: [
+                Text("Un e-mail de vérification a été envoyé à ${_controllerEmail.text}. Veuillez vérifier votre e-mail dans les 4 minutes pour continuer."),
+                const SizedBox(height: 20),
+                const CircularProgressIndicator(
+                  color: Colors.blue, // Changez la couleur selon vos besoins
+                ),
+              ],
+            ),
+          ),
         );
       },
     );
 
     // Vérifier périodiquement si l'e-mail est vérifié
-    bool isVerified = false;
-    while (!isVerified) {
+    while (!isVerified && !isTimeout) {
       await Future.delayed(Duration(seconds: 3)); // Attendre 3 secondes avant chaque vérification
       await FirebaseAuth.instance.currentUser?.reload(); // Recharger l'utilisateur pour obtenir les dernières informations
       isVerified = FirebaseAuth.instance.currentUser?.emailVerified ?? false;
     }
 
-    // Fermer le dialogue une fois que l'e-mail est vérifié
-    Navigator.pop(context);
+    // Si l'utilisateur n'a pas vérifié son e-mail dans les 5 minutes, le supprimer
+    if (isTimeout && !isVerified) {
+      try {
+        await FirebaseAuth.instance.currentUser?.delete();
+      
+        Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (context) => const Signup()));
+            showSnackBar(context, "Votre compte a été supprimé car vous n'avez pas vérifié votre e-mail dans les 5 minutes.");
+      } catch (e) {
+        showSnackBar(context, "Erreur lors de la suppression du compte : $e");
+      }
+      return; // Arrêter l'exécution du code après la suppression de l'utilisateur et la navigation
+    } else if (isVerified) {
+      Navigator.of(context).pop(); // Fermer le dialogue
+      showSnackBar(context, "Votre e-mail a été vérifié avec succès !");
+      // Continuer avec le reste du code après vérification de l'e-mail
+    }
+      // Arrêter le timer une fois terminé
+      timer!.cancel();
 
       final storageRef = FirebaseStorage.instance
           .ref("$_selectedItem/${_controllerUsername.text}/$imgName");

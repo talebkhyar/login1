@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:login1/pages/ForgotPassword.dart';
 import 'package:login1/pages/home.dart';
 
 import 'package:login1/share/snackbar.dart';
@@ -169,7 +170,23 @@ class _LoginState extends State<Login> {
                   return null;
                 },
               ),
-              const SizedBox(height: 60),
+              // const SizedBox(height: 60),
+              Container(
+                 alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => ForgotPassword()),
+                    );
+                  },
+                  
+                  child: Text("Forgot password?",
+                      style: TextStyle(
+                          fontSize: 18, decoration: TextDecoration.underline)),
+                ),
+              ),
+                const SizedBox(height: 20),
               Column(
                 children: [
                   ElevatedButton(

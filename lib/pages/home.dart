@@ -68,7 +68,7 @@ class _HomeState extends State<Home> {
             child: Padding(
               padding: const EdgeInsets.all(18.0),
               child:Container(
-  height: (intNav == 0 || intNav == 2) ? 500 : null,
+  height: ( intNav == 2) ? 500 : null,
   child: listwidget[intNav],
 ),
 
