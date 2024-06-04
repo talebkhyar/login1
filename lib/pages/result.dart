@@ -82,6 +82,7 @@ class _ResultState extends State<Result> {
             setState(() {
               studentsData.add(studentDoc.data() as Map<String, dynamic>);
               filier = studentDoc['filiére'] ?? '';
+print(filier);
               // _fullNameController.text = studentDoc['full_name'] ?? '';
               // _nniController.text = studentDoc['NNI'] ?? '';
               // _phoneNumberController.text = studentDoc['tel'] ?? '';
@@ -109,11 +110,11 @@ class _ResultState extends State<Result> {
           String pdfUrl = doc['URL'];
           String name = doc['nom'];
           pdfDocuments.add(PDFDocument(name: name, url: pdfUrl));
+        
         });
+      } else {
+        showSnackBar(context, "resultats indisponible");
       }
-      else {
-         showSnackBar(context, "resultats indisponible");
-      }   
     } catch (e) {
       print('Erreur lors de la récupération des URLs des PDF: $e');
       throw e; // Rejette l'erreur pour la capturer dans catchError

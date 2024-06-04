@@ -52,7 +52,7 @@ class _SignupState extends State<Signup> {
   String? releveName;
   bool isLoading = false;
 
-  String? _selectedItem = 'Réseau informatique';
+  String? _selectedItem = 'Réseaux informatiques et Télécommunications';
   rec() async {
     final mycart = await ImagePicker().pickImage(source: ImageSource.gallery);
 
@@ -486,6 +486,7 @@ register() async {
               ),
               const SizedBox(height: 10),
               Container(
+                
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10.0),
                   color: Colors.grey[200]!
@@ -493,9 +494,10 @@ register() async {
                   border: Border.all(
                       color: Colors.grey), // Ajouter une bordure si nécessaire
                 ),
-                // padding: EdgeInsets.symmetric(horizontal: 100,),
+                //  padding: EdgeInsets.symmetric(horizontal: 0,),
 
                 child: DropdownButton<String>(
+                  isExpanded: true,
                   value: _selectedItem,
                   onChanged: (String? newValue) {
                     setState(() {
@@ -503,10 +505,11 @@ register() async {
                     });
                   },
                   items: <String>[
-                    'Réseau informatique',
+                    'Réseaux informatiques et Télécommunications',
                     'statistique',
                     'informatique de gestion',
-                    'developpement informatique'
+                    'Développement Informatique',
+                    'Finance & Comptabilité'
                   ].map<DropdownMenuItem<String>>((String value) {
                     return DropdownMenuItem<String>(
                       value: value,
