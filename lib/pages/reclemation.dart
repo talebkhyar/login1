@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:login1/pages/afficheReclemation.dart';
 import 'package:path/path.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
@@ -23,13 +24,15 @@ class _RectlmationState extends State<Rectlmation> {
   final descripController = TextEditingController();
   File? _selectedImage;
   String? _semester;
-  String? _devoirOuExamen;
+
   String? urlImage;
   bool? valide;
   List<Map<String, dynamic>> studentsData = [];
   String? nom;
   String? emailUser;
   String? fillier;
+  String? reclemationExamen = 'Non';
+  String? etat;
 
   @override
   void initState() {
@@ -39,6 +42,7 @@ class _RectlmationState extends State<Rectlmation> {
 
   @override
   Widget build(BuildContext context) {
+    final now = DateTime.now();
     valide = false;
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.primaryContainer,
@@ -46,6 +50,21 @@ class _RectlmationState extends State<Rectlmation> {
         backgroundColor: Colors.blueAccent,
         title: Text('Reclmation'),
         centerTitle: true,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 20),
+            child: GestureDetector(
+              onTap: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => const AfficheReclemation()));
+              },
+              child: const Icon(
+                Icons.warning_amber_rounded,
+                size: 35,
+              ),
+            ),
+          ),
+        ],
       ),
       body: Container(
         height: double.infinity,
@@ -55,7 +74,7 @@ class _RectlmationState extends State<Rectlmation> {
             const Padding(
               padding: const EdgeInsets.all(15.0),
               child: Text(
-                "Selectionz le Semester",
+                'Selectionz le Semester',
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
             ),
@@ -92,40 +111,11 @@ class _RectlmationState extends State<Rectlmation> {
             const Padding(
               padding: const EdgeInsets.all(15.0),
               child: Text(
-                "Devoir Ou Examen",
+                "Reclemation Devoir",
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
             ),
-            Row(
-              children: [
-                Expanded(
-                  child: RadioListTile(
-                    title: Text('Devoir'),
-                    value: "Devoir",
-                    groupValue: _devoirOuExamen,
-                    onChanged: (value) {
-                      setState(() {
-                        _devoirOuExamen = value;
-                      });
-                      print(value);
-                    },
-                  ),
-                ),
-                Expanded(
-                  child: RadioListTile(
-                    title: Text('Examen'),
-                    value: "Examen",
-                    groupValue: _devoirOuExamen,
-                    onChanged: (value) {
-                      setState(() {
-                        _devoirOuExamen = value;
-                      });
-                      print(value);
-                    },
-                  ),
-                ),
-              ],
-            ),
+
             Padding(
               padding: const EdgeInsets.all(10),
               child: TextField(
@@ -136,51 +126,85 @@ class _RectlmationState extends State<Rectlmation> {
                         borderRadius: BorderRadius.circular(15))),
               ),
             ),
-            if (_devoirOuExamen == "Devoir")
-              Padding(
-                padding: const EdgeInsets.all(10),
-                child: TextField(
-                  controller: noteController,
-                  decoration: InputDecoration(
-                      hintText: "Note exacte",
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(15))),
-                ),
+            // if (_devoirOuExamen == "Devoir")
+            Padding(
+              padding: const EdgeInsets.all(10),
+              child: TextField(
+                controller: noteController,
+                decoration: InputDecoration(
+                    hintText: "Note exacte",
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15))),
               ),
-            if (_devoirOuExamen == "Devoir")
-              const Text(
-                'Selectionez la copie du note',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    fontSize: 19,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.purple),
-              ),
-            if (_devoirOuExamen == "Devoir")
-              Padding(
-                padding: const EdgeInsets.only(top: 25),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    MaterialButton(
+            ),
+            // if (_devoirOuExamen == "Devoir")
+            const Text(
+              'Selectionez la copie du note',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  fontSize: 19,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.purple),
+            ),
+            //if (_devoirOuExamen == "Devoir")
+            Padding(
+              padding: const EdgeInsets.only(top: 25),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  MaterialButton(
+                    onPressed: () {
+                      _pickImageFromGallery();
+                    },
+                    child: Container(
+                        height: 50,
+                        child: Image.asset('assets/img/gallery.png')),
+                  ),
+                  //if (_devoirOuExamen == "Devoir")
+                  MaterialButton(
                       onPressed: () {
-                        _pickImageFromGallery();
+                        _pickImageFromCamera();
                       },
                       child: Container(
                           height: 50,
-                          child: Image.asset('assets/img/gallery.png')),
-                    ),
-                    if (_devoirOuExamen == "Devoir")
-                      MaterialButton(
-                          onPressed: () {
-                            _pickImageFromCamera();
-                          },
-                          child: Container(
-                              height: 50,
-                              child: Image.asset('assets/img/camera.png'))),
-                  ],
-                ),
+                          child: Image.asset('assets/img/camera.png'))),
+                ],
               ),
+            ),
+
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Column(
+                children: [
+                  const Text(
+                    "Tu as Reclemation Sur L'Examen ?",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  RadioListTile(
+                    title: Text('Oui'),
+                    value: "Oui",
+                    groupValue: reclemationExamen,
+                    onChanged: (value) {
+                      setState(() {
+                        reclemationExamen = value;
+                      });
+                      print(value);
+                    },
+                  ),
+                  RadioListTile(
+                    title: Text('Non'),
+                    value: "Non",
+                    groupValue: reclemationExamen,
+                    onChanged: (value) {
+                      setState(() {
+                        reclemationExamen = value;
+                      });
+                      print(value);
+                    },
+                  ),
+                ],
+              ),
+            ),
 
             const SizedBox(
               height: 20,
@@ -223,21 +247,21 @@ class _RectlmationState extends State<Rectlmation> {
                                 CupertinoDialogAction(
                                   child: Text('Yes'),
                                   isDefaultAction: true,
-                                  onPressed: ()async {
-                                    
-                                  await  saveImage();
+                                  onPressed: () async {
+                                    await saveImage();
                                     addDataToSave(
                                         _semester.toString().trim(),
-                                        _devoirOuExamen.toString().trim(),
+                                        reclemationExamen.toString(),
                                         matiereController.text.trim(),
                                         noteController.text.trim(),
                                         descripController.text.trim(),
-                                        valide);
+                                        valide,
+                                        now);
 
                                     Navigator.pop(context);
                                     setState(() {
                                       _semester = "";
-                                      _devoirOuExamen = "";
+                                      reclemationExamen = 'Non';
                                       matiereController.text = "";
                                       noteController.text = "";
                                       noteController.text = "";
@@ -273,12 +297,12 @@ class _RectlmationState extends State<Rectlmation> {
       _selectedImage = File(returnedImage!.path);
     });
   }
-
-  Future addDataToSave(String semester, String devoirOuEx, String nomMat,
-      String note, String descrp, valide) async {
-    await FirebaseFirestore.instance.collection('reclemations').add({
+final credential = FirebaseAuth.instance.currentUser;
+  Future addDataToSave(String semester, reclemationExamen, String nomMat,
+      String note, String descrp, valide, now) async {
+    await FirebaseFirestore.instance.collection('reclemations').doc(credential!.uid).set({
       'semester': semester,
-      'devoirOuExamen': devoirOuEx,
+      'reclemationDeExamen': reclemationExamen,
       'nomMatiere': nomMat,
       'noteExact': note,
       'descrip': descrp,
@@ -286,7 +310,9 @@ class _RectlmationState extends State<Rectlmation> {
       'urlImage': urlImage,
       'full_name': nom,
       'email': emailUser,
-      'filiére': fillier
+      'filiére': fillier,
+      'dateEnvoie': now.toString()
+      //'examen'
     });
   }
 
@@ -294,9 +320,8 @@ class _RectlmationState extends State<Rectlmation> {
     var ImageName = basename(_selectedImage!.path);
     var refStorage = FirebaseStorage.instance.ref('reclemations/$ImageName');
     await refStorage.putFile(_selectedImage!);
-    
-      urlImage = await refStorage.getDownloadURL();
-    
+
+    urlImage = await refStorage.getDownloadURL();
   }
 
   Future<void> getDataFromFirestore() async {
