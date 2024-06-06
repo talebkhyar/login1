@@ -12,6 +12,8 @@ class AfficheReclemation extends StatefulWidget {
 class _AfficheReclemationState extends State<AfficheReclemation> {
   List<Map<String, dynamic>> studentsData = [];
   final credential = FirebaseAuth.instance.currentUser;
+    String? _fullNameController;
+    String nom='';
   getPdfUrlsFromFirestore() async {
     try {
       CollectionReference pdfCollection =
@@ -21,9 +23,11 @@ class _AfficheReclemationState extends State<AfficheReclemation> {
           await pdfCollection.doc(credential!.uid).get();
       querySnapshot.docs.forEach((doc) {
         studentsData.add(studentDoc.data() as Map<String, dynamic>);
-        var _fullNameController;
-        _fullNameController.text = studentDoc['full_name'] ?? '';
-        print(_fullNameController);
+    
+        _fullNameController = studentDoc['full_name'] ?? '';
+      
+         nom =studentsData[0].toString();
+           print(nom);
       });
     } catch (e) {
       print('Erreur lors de la récupération des URLs des PDF: $e');
@@ -49,8 +53,8 @@ class _AfficheReclemationState extends State<AfficheReclemation> {
         padding: const EdgeInsets.only(right: 15, left: 15, top: 10),
         child: ListView(
           children: const [
-            Text(
-              'Les Listes de reclemation',
+            Text( "",
+              
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
