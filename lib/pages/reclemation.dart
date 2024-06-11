@@ -258,7 +258,7 @@ class _RectlmationState extends State<Rectlmation> {
                                         valide,
                                         now);
 
-                                    Navigator.pop(context);
+                                    
                                     setState(() {
                                       _semester = "";
                                       reclemationExamen = 'Non';
@@ -266,7 +266,10 @@ class _RectlmationState extends State<Rectlmation> {
                                       noteController.text = "";
                                       noteController.text = "";
                                       descripController.text = "";
+                                    _selectedImage = null;
+                                       urlImage = null;
                                     });
+                                    Navigator.pop(context);
                                   },
                                 )
                               ],
@@ -297,10 +300,11 @@ class _RectlmationState extends State<Rectlmation> {
       _selectedImage = File(returnedImage!.path);
     });
   }
-final credential = FirebaseAuth.instance.currentUser;
+
+  final credential = FirebaseAuth.instance.currentUser;
   Future addDataToSave(String semester, reclemationExamen, String nomMat,
       String note, String descrp, valide, now) async {
-    await FirebaseFirestore.instance.collection('reclemations').doc(credential!.uid).set({
+    await FirebaseFirestore.instance.collection('reclemations').add({
       'semester': semester,
       'reclemationDeExamen': reclemationExamen,
       'nomMatiere': nomMat,
@@ -317,11 +321,15 @@ final credential = FirebaseAuth.instance.currentUser;
   }
 
   Future saveImage() async {
-    var ImageName = basename(_selectedImage!.path);
-    var refStorage = FirebaseStorage.instance.ref('reclemations/$ImageName');
-    await refStorage.putFile(_selectedImage!);
+    if (_selectedImage != null) {
+      var ImageName = basename(_selectedImage!.path);
+      var refStorage = FirebaseStorage.instance.ref('reclemations/$ImageName');
+      await refStorage.putFile(_selectedImage!);
 
-    urlImage = await refStorage.getDownloadURL();
+      urlImage = await refStorage.getDownloadURL();
+    } else {
+      urlImage = null;
+    }
   }
 
   Future<void> getDataFromFirestore() async {
